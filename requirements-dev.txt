@@ -6,6 +6,10 @@
 # ---- 运行时 ----
 pydantic>=2.7,<3
 sqlalchemy>=2.0,<3
+# viz/volcano.py 的 VolcanoResult 用 NotRequired 标注可选键，而 NotRequired
+# 是 Python 3.11 才进入标准库的（本仓 requires-python >= 3.10）。
+# ⚠️ 3.11+ 上由标准库提供，无需此包 —— 所以只在 3.10 上装。
+typing_extensions>=4.6; python_version < "3.11"
 
 # ---- 运行时：viz/ 绘图包（2026-10-05 补）----
 # ⚠️ 这 5 个库此前**漏列**，但 viz/ 的 8 个绘图模块直接 import 它们；

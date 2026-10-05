@@ -74,7 +74,17 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple, NotRequired, Sequence, TypedDict
+from typing import TYPE_CHECKING, Any, NamedTuple, Sequence, TypedDict
+
+# `NotRequired` 是 Python 3.11 才进入标准库的（本仓 requires-python >= 3.10）。
+# ⚠️ 这类「stdlib 名字的版本可用性」ruff 抓不到 —— target-version = "py310"
+#    拦得住新语法，但拦不住 `from typing import <3.11 才有的名字>`。实测它是
+#    **收集阶段 ImportError**（退出码 2、覆盖率产物一个都不写），只在最低版本
+#    job 上暴露；本仓 CI 的 3.10 job 就是靠这个抓出来的，别删那一档矩阵。
+try:  # Python >= 3.11
+    from typing import NotRequired
+except ImportError:  # pragma: no cover - Python 3.10 回退
+    from typing_extensions import NotRequired  # pragma: no cover
 
 from viz.config import VizConfig, apply_matplotlib_rcparams, get_config, save_figure
 
@@ -141,6 +151,14 @@ class VolcanoResult(TypedDict):
     ``interactive_html`` 用 :data:`typing.NotRequired` 标注：只有
     ``interactive=True`` 且 plotly 可用时才存在该键 —— 这正是"可选依赖降级"
     在类型层面的诚实表达。
+
+    ⚠️ 该可选性**只在静态检查层成立**（mypy 认）。运行时不成立：本模块有
+    ``from __future__ import annotations``，注解变成字符串，TypedDict 不做求值，
+    于是 ``__required_keys__`` 会把三个键全算作必需 —— 实测
+    ``{'image_base64', 'interactive_html', 'stats'}`` / ``__optional_keys__ == set()``。
+    根因是 PEP 563 与 TypedDict 的运行时内省不兼容（换 typing_extensions 也一样）。
+    影响：**别把本类当作 FastAPI 响应模型**，那样会生成"三个字段都必填"的错误 schema。
+    本仓只把它当函数返回注解用，不受影响。
     """
 
     image_base64: str

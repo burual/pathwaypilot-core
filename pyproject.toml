@@ -27,6 +27,10 @@ license = { text = "MIT" }
 dependencies = [
     "pydantic>=2.7",
     "sqlalchemy>=2.0",
+    # viz/volcano.py 的 VolcanoResult 用 NotRequired 标注可选键；
+    # NotRequired 直到 Python 3.11 才进入标准库，3.10 上需从这个 backport 包取。
+    # ⚠️ 用环境标记限定，3.11+ 上不引入多余依赖。
+    'typing_extensions>=4.6; python_version < "3.11"',
 ]
 
 # 开发/测试依赖。这里与 requirements-dev.txt 内容保持一致；
