@@ -145,13 +145,55 @@ jobs:
       #    source 由 .coveragerc 的 [run] source 决定。
       - name: pytest with coverage
         run: |
+          set -o pipefail
           python -m pytest \
             --cov \
             --cov-report=term-missing \
             --cov-report=xml \
             --cov-report=json \
             --cov-report=html \
-            --cov-fail-under=${{ env.COVERAGE_MIN }}
+            --cov-fail-under=${{ env.COVERAGE_MIN }} 2>&1 | tee pytest-output.log
+
+      # 把失败详情转成 GitHub annotation 贴到 run 页面上。
+      #
+      # ⚠️ 为什么需要这一步（实测踩过）：Actions 的日志下载端点**需要鉴权** ——
+      #    未登录访问 `/repos/<o>/<r>/actions/jobs/<id>/logs` 返回
+      #    403 "Must have admin rights to Repository."，而 job 页面的日志是 JS
+      #    动态加载的，抓不到正文。结果是：**公开仓库的 CI 失败了，却没法从外部
+      #    定位原因**（排查必须登录，或把日志贴进 issue）。
+      #    annotation 不一样 —— 它通过 `/commits/<sha>/check-runs` +
+      #    `.../annotations` 公开可读，任何人在页面上也能直接看到。
+      #
+      # 内容 = Python 版本 + 关键依赖版本 + pytest 输出末尾 50 行。
+      # 依赖版本是刻意的：多版本矩阵里「同一个 requirements 在不同 Python 上
+      # 解析出不同版本」是最难查的一类失败，把版本钉在失败现场能省一整轮排查。
+      - name: Surface failure details as annotation
+        if: failure()
+        run: |
+          python - <<'PY'
+          import importlib.metadata as md
+          import pathlib
+          import sys
+
+          head = ["python: " + sys.version.replace("\n", " ")]
+          keys = ("pytest", "pytest-cov", "pytest-asyncio", "fastapi", "starlette",
+                  "pydantic", "sqlalchemy", "httpx", "numpy", "matplotlib", "scipy",
+                  "scikit-learn", "plotly", "mplcursors")
+          vers = []
+          for k in keys:
+              try:
+                  vers.append("%s=%s" % (k, md.version(k)))
+              except Exception:
+                  vers.append("%s=?" % k)
+          head.append(" | ".join(vers))
+
+          log = pathlib.Path("pytest-output.log")
+          tail = log.read_text(errors="replace").splitlines()[-50:] if log.is_file() else ["(no log)"]
+          text = "\n".join(list(head) + list(tail))
+          esc = text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+          print("::error title=pytest failed on py%s::%s"
+                % (".".join(map(str, sys.version_info[:2])), esc))
+          PY
 
       - name: Upload coverage report
         # always() —— 测试失败时更要把报告留下来定位问题
