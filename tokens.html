@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PathwayPilot · 视觉设计 Token 规范 v0.2（学术紫）</title>
+<style>
+  :root{
+    --primary-50:#F7F0F5; --primary-100:#EDE0E9; --primary-400:#8A3A72;
+    --primary-500:#6E1F57; --primary-600:#581845;
+    --neutral-100:#F3F4F6; --neutral-300:#D1D5DB; --neutral-400:#9CA3AF;
+    --neutral-500:#6B7280; --neutral-700:#3D4452; --neutral-900:#1A1D23; --white:#FFFFFF;
+    --up:#C05621; --down:#2C7A7B; --warning:#D69E2E; --error:#C53030; --success:#276749;
+    --font-heading:'Inter','Source Sans 3','Source Sans Pro',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono','Roboto Mono',ui-monospace,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--neutral-100);color:var(--neutral-900);
+    font-family:var(--font-body);font-size:15px;line-height:24px}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 24px 72px}
+  h1{font-family:var(--font-heading);font-size:28px;line-height:36px;font-weight:700;margin:0 0 6px}
+  .sub{color:var(--neutral-700);font-size:13px;margin:0}
+  .badge-note{display:inline-block;margin-top:12px;font-size:13px;color:var(--primary-500);
+    background:var(--primary-50);border:1px solid var(--primary-100);border-radius:4px;padding:4px 10px}
+  h2{font-family:var(--font-heading);font-size:20px;line-height:28px;font-weight:700;
+    margin:44px 0 4px;padding-bottom:10px;border-bottom:1px solid var(--neutral-300)}
+  h3{font-family:var(--font-heading);font-size:16px;line-height:24px;font-weight:700;margin:26px 0 10px}
+  p.lead{color:var(--neutral-700);font-size:13px;line-height:20px;margin:8px 0 16px}
+  code,.mono{font-family:var(--font-mono);font-size:14px;color:var(--primary-500)}
+  table{border-collapse:collapse;width:100%;margin:10px 0 6px;font-size:13px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--neutral-300);vertical-align:top}
+  th{font-size:13px;font-weight:700;color:var(--neutral-700);border-bottom:1px solid var(--neutral-300)}
+  .sw{border:1px solid var(--neutral-300);border-radius:8px;overflow:hidden;background:var(--white)}
+  .sw .chip{height:60px}
+  .sw .meta{padding:8px 10px}
+  .sw .name{font-size:13px;font-weight:700}
+  .sw .hex{font-family:var(--font-mono);font-size:11px;color:var(--neutral-500);margin-top:2px}
+  .grid{display:grid;gap:12px}
+  .g5{grid-template-columns:repeat(5,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  .spec{border:1px solid var(--neutral-300);border-radius:8px;background:var(--white);padding:18px;margin:10px 0}
+  .sp-row{display:flex;align-items:center;gap:14px;padding:5px 0}
+  .sp-label{width:96px;font-family:var(--font-mono);font-size:11px;color:var(--neutral-500);flex:none}
+  .sp-bar{height:12px;background:var(--primary-100);border-radius:2px}
+  .rbox{width:120px;height:76px;background:var(--white);border:1px solid var(--neutral-300);
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font-family:var(--font-mono);font-size:11px;color:var(--neutral-500)}
+  .demo-row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+  .demo-col{display:flex;flex-direction:column;gap:16px}
+  .navbar{height:64px;background:var(--primary-500);border-radius:8px;display:flex;align-items:center;
+    justify-content:space-between;padding:0 20px;color:#fff;font-weight:700}
+  .navbar .menu{display:flex;gap:18px;font-weight:400;font-size:13px;opacity:.92}
+  .btn{border-radius:6px;padding:10px 24px;font-size:15px;font-weight:500;border:1px solid transparent;cursor:default;display:inline-block}
+  .btn-primary{background:var(--primary-500);color:#fff}
+  .btn-primary-hover{background:var(--primary-600);color:#fff}
+  .btn-secondary{background:var(--white);color:var(--primary-500);border-color:var(--primary-500)}
+  .btn-secondary-hover{background:var(--primary-50);color:var(--primary-500);border-color:var(--primary-500)}
+  .card-demo{background:var(--white);border:1px solid var(--neutral-300);border-radius:8px;padding:24px;color:var(--neutral-900)}
+  .input-demo{background:var(--primary-50);border:1px solid var(--primary-100);border-radius:6px;padding:10px 12px;color:var(--neutral-900);font-size:15px}
+  .input-focus{outline:3px solid var(--primary-400);outline-offset:0;background:var(--primary-50);border:1px solid var(--primary-400);border-radius:6px;padding:10px 12px;color:var(--neutral-900);font-size:15px}
+  .tag{display:inline-block;background:var(--primary-50);color:var(--primary-500);border-radius:4px;padding:4px 8px;font-size:13px;font-weight:500}
+  .up{color:var(--up);font-weight:700}
+  .down{color:var(--down);font-weight:700}
+  .ev-row{display:flex;gap:10px;align-items:center;margin:8px 0;font-size:13px}
+  .ev-bar{width:64px;height:12px;border-radius:4px}
+  .ev-high{background:var(--primary-500)}
+  .ev-mid{background:rgba(110,31,87,.5)}
+  .ev-low{background:var(--neutral-300);background-image:radial-gradient(var(--neutral-400) 1.4px,transparent 1.6px);background-size:6px 6px}
+  .muted{color:var(--neutral-500)}
+  .dim{background:#111827;border-radius:12px;padding:20px 22px;color:#E5E7EB}
+  .dim .accent{color:#9B6A9E;font-weight:700}
+  .dim .card2{background:#1F2937;border:1px solid #374151;border-radius:8px;padding:14px 16px;margin-top:12px}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--neutral-700)}
+  .flow b{color:var(--primary-500)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>PathwayPilot · 视觉设计 Token 规范</h1>
+  <p class="sub">v0.2 · 学术紫（主色 #6E1F57）· 浅色为主 + 深色「学术模式」· 模块 2 / 4 修订</p>
+  <span class="badge-note">仅原型 · 不接真实数据 · 面向临床医生 / 医学院教师 · 学术 · 克制 · 可信</span>
+
+  <h2>1 · 色彩系统 Color</h2>
+  <p class="lead">主色收敛为学术紫；中性色承载 90% 界面；语义色只用于数据方向与状态。禁用纯红纯绿、霓虹光效、渐变。</p>
+
+  <h3>1.1 主色 Primary（学术紫）</h3>
+  <div class="grid g5">
+    <div class="sw"><div class="chip" style="background:#F7F0F5"></div><div class="meta"><div class="name">primary-50</div><div class="hex">#F7F0F5</div></div></div>
+    <div class="sw"><div class="chip" style="background:#EDE0E9"></div><div class="meta"><div class="name">primary-100</div><div class="hex">#EDE0E9</div></div></div>
+    <div class="sw"><div class="chip" style="background:#8A3A72"></div><div class="meta"><div class="name">primary-400</div><div class="hex">#8A3A72</div></div></div>
+    <div class="sw"><div class="chip" style="background:#6E1F57"></div><div class="meta"><div class="name">primary-500 ★</div><div class="hex">#6E1F57</div></div></div>
+    <div class="sw"><div class="chip" style="background:#581845"></div><div class="meta"><div class="name">primary-600</div><div class="hex">#581845</div></div></div>
+  </div>
+  <table>
+    <tr><th>Token</th><th>色值</th><th>用途</th></tr>
+    <tr><td><code>primary-500</code></td><td><code>#6E1F57</code></td><td>导航栏背景、主按钮、品牌标识、链接（hover 用 primary-600）</td></tr>
+    <tr><td colspan="3" style="background:var(--primary-50);color:var(--primary-600);font-size:13px">用色约定：<b>标题一律使用 neutral-900</b>，主色只用于品牌、按钮、链接与关键强调 —— 长文阅读不疲劳。</td></tr>
+    <tr><td><code>primary-600</code></td><td><code>#581845</code></td><td>主按钮 hover/active、焦点边框</td></tr>
+    <tr><td><code>primary-400</code></td><td><code>#8A3A72</code></td><td>次级强调（进度指示、选中态）</td></tr>
+    <tr><td><code>primary-50</code></td><td><code>#F7F0F5</code></td><td>卡片背景、侧栏、表单输入框背景</td></tr>
+    <tr><td><code>primary-100</code></td><td><code>#EDE0E9</code></td><td>分割线、表格边框、轻描边</td></tr>
+  </table>
+
+  <h3>1.2 中性色 Neutral</h3>
+  <div class="grid g5">
+    <div class="sw"><div class="chip" style="background:#1A1D23"></div><div class="meta"><div class="name">neutral-900</div><div class="hex">#1A1D23</div></div></div>
+    <div class="sw"><div class="chip" style="background:#3D4452"></div><div class="meta"><div class="name">neutral-700</div><div class="hex">#3D4452</div></div></div>
+    <div class="sw"><div class="chip" style="background:#6B7280"></div><div class="meta"><div class="name">neutral-500</div><div class="hex">#6B7280</div></div></div>
+    <div class="sw"><div class="chip" style="background:#D1D5DB"></div><div class="meta"><div class="name">neutral-300</div><div class="hex">#D1D5DB</div></div></div>
+    <div class="sw"><div class="chip" style="background:#F3F4F6"></div><div class="meta"><div class="name">neutral-100</div><div class="hex">#F3F4F6</div></div></div>
+  </div>
+  <table>
+    <tr><th>Token</th><th>色值</th><th>用途</th></tr>
+    <tr><td><code>neutral-900</code></td><td><code>#1A1D23</code></td><td>正文主文字</td></tr>
+    <tr><td><code>neutral-700</code></td><td><code>#3D4452</code></td><td>次要文字、帮助文本</td></tr>
+    <tr><td><code>neutral-500</code></td><td><code>#6B7280</code></td><td>禁用文字、占位符</td></tr>
+    <tr><td><code>neutral-300</code></td><td><code>#D1D5DB</code></td><td>边框、分隔线</td></tr>
+    <tr><td><code>neutral-100</code></td><td><code>#F3F4F6</code></td><td>页面背景（浅色模式）</td></tr>
+    <tr><td><code>white</code></td><td><code>#FFFFFF</code></td><td>卡片背景、弹窗背景</td></tr>
+  </table>
+
+  <h3>1.3 语义色 Semantic（数据方向用低饱和，不用纯红纯绿）</h3>
+  <div class="grid g4">
+    <div class="sw"><div class="chip" style="background:#C05621"></div><div class="meta"><div class="name">上调 (up)</div><div class="hex">#C05621 · 丰度增加</div></div></div>
+    <div class="sw"><div class="chip" style="background:#2C7A7B"></div><div class="meta"><div class="name">下调 (down)</div><div class="hex">#2C7A7B · 丰度减少</div></div></div>
+    <div class="sw"><div class="chip" style="background:#D69E2E"></div><div class="meta"><div class="name">警告 warning</div><div class="hex">#D69E2E</div></div></div>
+    <div class="sw"><div class="chip" style="background:#C53030"></div><div class="meta"><div class="name">错误 error</div><div class="hex">#C53030 · 仅严重错误</div></div></div>
+  </div>
+  <div class="grid g4" style="margin-top:12px">
+    <div class="sw"><div class="chip" style="background:#276749"></div><div class="meta"><div class="name">成功 success</div><div class="hex">#276749</div></div></div>
+    <div class="sw"><div class="chip" style="background:#6E1F57"></div><div class="meta"><div class="name">证据高</div><div class="hex">primary-500 实心</div></div></div>
+    <div class="sw"><div class="chip" style="background:rgba(110,31,87,.5)"></div><div class="meta"><div class="name">证据中</div><div class="hex">primary-500 / 50%</div></div></div>
+    <div class="sw"><div class="chip" style="background:#D1D5DB;background-image:radial-gradient(#9CA3AF 1.4px,transparent 1.6px);background-size:6px 6px"></div><div class="meta"><div class="name">证据低</div><div class="hex">#9CA3AF 灰色点状</div></div></div>
+  </div>
+
+  <h2>2 · 深色模式（学术模式）</h2>
+  <p class="lead">低对比度舒适阅读，避免霓虹。仅颜色层切换，字号 / 间距 / 圆角结构不变。</p>
+  <div class="dim">
+    <div>背景 <span class="accent">#111827</span> · 卡片 <span class="accent">#1F2937</span> · 边框 <span class="accent">#374151</span></div>
+    <div style="margin-top:6px">文字 <span class="accent">#E5E7EB</span> · 强调（替代主色）<span class="accent">#9B6A9E</span></div>
+    <div class="card2">
+      <div style="font-size:16px;font-weight:700">样本功能变化分析报告</div>
+      <div style="font-size:13px;color:#C3C9D4;margin-top:4px">芳香族氨基酸相关蛋白丰度 <span style="color:#C05621;font-weight:700">↑ 相对升高</span>，提示该通路可能被上调。</div>
+    </div>
+    <div style="font-size:12px;color:#8B93A1;margin-top:10px">切换：根节点 <span class="mono" style="color:#9B6A9E">data-theme="academic-dark"</span>，不新增 token。</div>
+  </div>
+
+  <h2>3 · 字体与字号 Typography</h2>
+  <h3>3.1 字体族</h3>
+  <div class="spec">
+    <div style="font-family:var(--font-heading);font-size:16px">Inter / Source Sans Pro — 标题 <span class="muted" style="font-size:13px">无衬线，学术感</span></div>
+    <div style="font-family:var(--font-body);font-size:15px;margin-top:8px">Inter / system-ui — 正文 <span class="muted" style="font-size:13px">界面与段落</span></div>
+    <div style="font-family:var(--font-mono);font-size:14px;margin-top:8px">JetBrains Mono — 编号与统计 <span class="muted" style="font-size:13px">hsa04115 · EC 1.1.1.1 · KO K00001 · q=0.003</span></div>
+  </div>
+
+  <h3>3.2 字号层级</h3>
+  <table>
+    <tr><th>层级</th><th>px / rem</th><th>字重</th><th>用途</th></tr>
+    <tr><td>Hero 标题</td><td><code>36px / 2.25rem</code></td><td>700</td><td>首页主标题</td></tr>
+    <tr><td>一级标题</td><td><code>28px / 1.75rem</code></td><td>700</td><td>页面标题</td></tr>
+    <tr><td>二级标题</td><td><code>20px / 1.25rem</code></td><td>700</td><td>区块标题</td></tr>
+    <tr><td>三级标题</td><td><code>16px / 1rem</code></td><td>bold</td><td>卡片标题</td></tr>
+    <tr><td>正文</td><td><code>15px / 0.9375rem</code></td><td>400</td><td>正文</td></tr>
+    <tr><td>小字 / 脚注</td><td><code>13px / 0.8125rem</code></td><td>400</td><td>辅助说明 / 来源标注</td></tr>
+    <tr><td>编号 / 代码</td><td><code>14px / 0.875rem</code></td><td>400</td><td>EC / KO / 统计值（等宽）</td></tr>
+  </table>
+
+  <h3>3.3 活样张</h3>
+  <div class="spec">
+    <div style="font-family:var(--font-heading);font-size:36px;line-height:44px;font-weight:700">样本功能变化分析报告</div>
+    <div style="font-family:var(--font-heading);font-size:28px;line-height:36px;font-weight:700;margin-top:10px">主要代谢功能变化</div>
+    <div style="font-family:var(--font-heading);font-size:20px;line-height:28px;font-weight:700;margin-top:8px">可能涉及的生理机制</div>
+    <div style="font-family:var(--font-heading);font-size:16px;line-height:24px;font-weight:700;margin-top:8px">氨基酸代谢通路（hsa00250）</div>
+    <div style="font-size:15px;line-height:24px;margin-top:8px">本样本中，芳香族氨基酸相关蛋白丰度 <span class="up">↑ 相对升高</span>，提示该通路可能被上调；需结合临床信息进一步验证。</div>
+    <div style="font-size:13px;line-height:20px;color:var(--neutral-700);margin-top:8px">数据来源：KEGG（2026-03 版本）· UniProt（2026-02 版本）· 分析时间 2026-10-03 10:49</div>
+    <div class="mono" style="margin-top:8px">EC 1.2.1.3 · KO K00128 · q = 0.003 · log2FC = 1.84</div>
+  </div>
+
+  <h2>4 · 间距与圆角 Spacing &amp; Radius</h2>
+  <p class="lead">间距为 4px 的倍数；圆角按组件语义区分（徽章 4 / 按钮·输入框 6 / 卡片 8 / 模态框 12）。</p>
+  <div class="spec">
+    <div class="sp-row"><div class="sp-label">space-1</div><div class="sp-bar" style="width:4px"></div><div class="muted" style="font-size:11px">4px</div></div>
+    <div class="sp-row"><div class="sp-label">space-2</div><div class="sp-bar" style="width:8px"></div><div class="muted" style="font-size:11px">8px</div></div>
+    <div class="sp-row"><div class="sp-label">space-3</div><div class="sp-bar" style="width:12px"></div><div class="muted" style="font-size:11px">12px</div></div>
+    <div class="sp-row"><div class="sp-label">space-4</div><div class="sp-bar" style="width:16px"></div><div class="muted" style="font-size:11px">16px</div></div>
+    <div class="sp-row"><div class="sp-label">space-5</div><div class="sp-bar" style="width:20px"></div><div class="muted" style="font-size:11px">20px</div></div>
+    <div class="sp-row"><div class="sp-label">space-6</div><div class="sp-bar" style="width:24px"></div><div class="muted" style="font-size:11px">24px</div></div>
+    <div class="sp-row"><div class="sp-label">space-8</div><div class="sp-bar" style="width:32px"></div><div class="muted" style="font-size:11px">32px</div></div>
+    <div class="sp-row"><div class="sp-label">space-12</div><div class="sp-bar" style="width:48px"></div><div class="muted" style="font-size:11px">48px</div></div>
+    <div class="sp-row"><div class="sp-label">space-16</div><div class="sp-bar" style="width:64px"></div><div class="muted" style="font-size:11px">64px</div></div>
+  </div>
+
+  <h3>4.1 圆角</h3>
+  <div class="spec"><div class="demo-row">
+    <div class="rbox" style="border-radius:4px">tag 4px</div>
+    <div class="rbox" style="border-radius:6px">btn/input 6px</div>
+    <div class="rbox" style="border-radius:8px">card 8px</div>
+    <div class="rbox" style="border-radius:12px">modal 12px</div>
+  </div></div>
+
+  <h3>4.2 阴影（仅两级）</h3>
+  <div class="spec"><div class="demo-row">
+    <div class="rbox" style="border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.05)">card</div>
+    <div class="rbox" style="border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,.1)">modal</div>
+    <div class="rbox" style="border-radius:8px">无阴影</div>
+  </div></div>
+
+  <h2>5 · 组件命名与样式速查表</h2>
+  <p class="lead">组件 token 命名 + 关键样式（仅原型，不接真实数据）。</p>
+  <table>
+    <tr><th>组件</th><th>token 名</th><th>背景</th><th>文字</th><th>边框</th><th>圆角</th><th>备注</th></tr>
+    <tr><td>导航栏</td><td><code>navbar</code></td><td>primary-500</td><td>white</td><td>无</td><td>0</td><td>高度 64px，logo 左，菜单右</td></tr>
+    <tr><td>主按钮</td><td><code>btn-primary</code></td><td>primary-500 → hover primary-600</td><td>white</td><td>无</td><td>6px</td><td>padding 10px 24px</td></tr>
+    <tr><td>次要按钮</td><td><code>btn-secondary</code></td><td>white</td><td>primary-500</td><td>primary-500 1px solid</td><td>6px</td><td>hover 背景 primary-50</td></tr>
+    <tr><td>卡片</td><td><code>card</code></td><td>white</td><td>neutral-900</td><td>neutral-300 1px solid</td><td>8px</td><td>padding 24px</td></tr>
+    <tr><td>输入框</td><td><code>input</code></td><td>primary-50</td><td>neutral-900</td><td>primary-100 1px solid</td><td>6px</td><td>focus ring primary-400</td></tr>
+    <tr><td>标签</td><td><code>tag</code></td><td>primary-50</td><td>primary-500</td><td>无</td><td>4px</td><td>padding 4px 8px</td></tr>
+    <tr><td>数据高亮·上调</td><td><code>up-arrow</code></td><td>无</td><td>#C05621</td><td>无</td><td>无</td><td>带 ↑ 箭头</td></tr>
+    <tr><td>数据高亮·下调</td><td><code>down-arrow</code></td><td>无</td><td>#2C7A7B</td><td>无</td><td>无</td><td>带 ↓ 箭头</td></tr>
+    <tr><td>证据高</td><td><code>evidence-high</code></td><td>primary-500</td><td>white</td><td>无</td><td>4px</td><td>实心圆点或条</td></tr>
+    <tr><td>证据中</td><td><code>evidence-mid</code></td><td>primary-500 / 50% opacity</td><td>primary-500</td><td>无</td><td>4px</td><td>半透明</td></tr>
+    <tr><td>证据低</td><td><code>evidence-low</code></td><td>neutral-300</td><td>neutral-500</td><td>无</td><td>4px</td><td>灰色点状</td></tr>
+  </table>
+
+  <h3>5.1 组件样张</h3>
+  <div class="spec demo-col">
+    <div class="navbar"><span>PathwayPilot</span><span class="menu"><span>分析</span><span>知识库</span><span>我的报告</span><span>关于</span></span></div>
+
+    <div class="demo-row">
+      <span class="btn btn-primary">开始分析</span>
+      <span class="btn btn-primary-hover">开始分析（hover）</span>
+      <span class="btn btn-secondary">保存草稿</span>
+      <span class="btn btn-secondary-hover">保存草稿（hover）</span>
+    </div>
+
+    <div class="demo-row" style="align-items:stretch">
+      <div style="flex:1;min-width:260px">
+        <div class="input-demo">hsa04115（默认态）</div>
+        <div class="input-focus" style="margin-top:10px">hsa04115（focus ring）</div>
+      </div>
+      <div class="card-demo" style="flex:1;min-width:260px">
+        <div style="font-family:var(--font-heading);font-size:16px;font-weight:700">氨基酸代谢通路</div>
+        <div style="font-size:13px;color:var(--neutral-700);margin-top:6px">本样本中相关蛋白丰度 <span class="up">↑ 升高</span>，提示通路可能被上调。</div>
+        <div style="margin-top:10px"><span class="tag">hsa00250</span> &nbsp; <span class="tag">EC 1.2.1.3</span></div>
+      </div>
+    </div>
+
+    <div class="demo-row">
+      <span class="tag">标签 tag</span>
+      <span class="up">↑ 上调 +2.4</span>
+      <span class="down">↓ 下调 −1.7</span>
+      <span style="color:var(--warning);font-weight:700">⚠ 注意</span>
+      <span style="color:var(--error);font-weight:700">✕ 错误</span>
+      <span style="color:var(--success);font-weight:700">✓ 完成</span>
+    </div>
+
+    <div>
+      <div class="ev-row"><span class="ev-bar ev-high"></span> 证据高（primary-500 实心）</div>
+      <div class="ev-row"><span class="ev-bar ev-mid"></span> 证据中（50% 透明）</div>
+      <div class="ev-row"><span class="ev-bar ev-low"></span> 证据低（灰色点状）</div>
+    </div>
+  </div>
+
+  <h2>附录 · 界面语言 Token（去 AI 感 · 降维不降质）</h2>
+  <h3>术语映射（首次出现给通俗解释，悬停展开专业定义）</h3>
+  <table>
+    <tr><th>专业术语</th><th>通俗解释（首现文案）</th></tr>
+    <tr><td>KEGG 通路</td><td>已知代谢 / 信号反应的路线图</td></tr>
+    <tr><td>EC 号</td><td>酶的功能编号</td></tr>
+    <tr><td>KO</td><td>跨物种通用的功能基因编号</td></tr>
+    <tr><td>丰度变化</td><td>该类蛋白在本样本中相对多少</td></tr>
+    <tr><td>富集分析</td><td>看某些功能是否被"过度集中"地出现</td></tr>
+    <tr><td>FDR / q 值</td><td>控制误判后的统计可信度</td></tr>
+  </table>
+  <div class="grid g2" style="gap:20px;margin-top:14px">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--neutral-700);margin-bottom:6px">建议用</div>
+      <div class="flow"><b>提示</b> · <b>可能相关</b> · 在本样本中 · 需结合临床验证 · 基于 KEGG（版本）· 证据强度低/中/高 · 仅供研究/教学参考</div>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--neutral-700);margin-bottom:6px">禁用</div>
+      <div class="flow">智能助手 · AI 为您 · 魔法 · 一键洞察 · 秒懂 · 颠覆 · 革命性 · 强大 · 无限可能 · 显著升高（未标证据）</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

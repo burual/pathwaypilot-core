@@ -1,0 +1,159 @@
+name: CI
+
+# ---------------------------------------------------------------------------
+# 触发条件
+#   - push 到 main / dev
+#   - PR 目标分支为 main
+#   - 手动触发（workflow_dispatch），便于跑一次全量矩阵排查
+# ---------------------------------------------------------------------------
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 最小权限：CI 只需要读代码；上传 artifact 不需要 write
+permissions:
+  contents: read
+
+# 同一分支的新 push 会取消上一次未跑完的任务，省 CI 分钟数
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  # 固定 UTF-8，避免 Windows 贡献者的中文输出在 runner 上乱码
+  PYTHONIOENCODING: utf-8
+  PYTHONDONTWRITEBYTECODE: "1"
+  # 覆盖率门禁：当前基线 82.7%，先卡 80 留余量
+  COVERAGE_MIN: "80"
+
+jobs:
+  # =========================================================================
+  # Job 1 — 静态质量门禁（只跑一次，Python 3.12）
+  #
+  # 为什么单独成 job：ruff / mypy / 循环依赖检测的结果与 Python 版本无关，
+  # 放进 3 版本矩阵等于白跑 3 遍。这一步跑得快、失败早，矩阵 job 也就不会
+  # 白白启动 3 个 runner。
+  # =========================================================================
+  quality:
+    name: Lint / Types / Circular deps
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      # --output-format=github 会把违规渲染成 PR 的行内注释
+      - name: ruff lint
+        run: ruff check --output-format=github .
+
+      # ⚠️ 暂时**不阻塞**：实测 `ruff format --check` 会重排 24/25 个文件
+      #    （多行调用合并成单行、参数换行策略等），属于全仓纯格式改写。
+      #    这类改动最好单独成一个 PR 提，混进「引入 CI」的提交里会淹没真实改动。
+      #    跑通一次 `ruff format .` 并 review 后，把 continue-on-error 删掉即可转正。
+      - name: ruff format check (non-blocking, see comment)
+        continue-on-error: true
+        run: ruff format --check --diff .
+
+      - name: mypy type check
+        run: mypy .
+
+      - name: circular dependency check (blocking)
+        run: python check_circular_deps.py .
+
+      # 延迟导入是项目推荐的断环手段，默认模式不算环。
+      # 这里额外跑一遍审计模式（把函数内 / TYPE_CHECKING 内的导入也算上），
+      # 仅报告不拦截 —— 出现环说明有值得复核的隐藏耦合，但不必卡住 PR。
+      - name: circular dependency audit (non-blocking)
+        continue-on-error: true
+        run: python check_circular_deps.py . --include-lazy
+
+  # =========================================================================
+  # Job 2 — 测试矩阵（Python 3.10 / 3.11 / 3.12）
+  #
+  # fail-fast: false —— 一个版本挂了不要取消其他版本，否则拿不到完整诊断。
+  # 这里跑**全量**用例（含 slow + integration）；pre-commit 那边才用
+  # `-m "not slow and not integration"` 跑快子集。
+  # ⚠️ integration 用内存 SQLite + FastAPI TestClient，不需要任何外部服务，
+  #    因此在 runner 上无需 service container 也能跑。
+  # =========================================================================
+  test:
+    name: pytest (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quality
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+
+      # ⚠️ 用 `--cov`（不带值）而不是 `--cov=src`：
+      #    本仓没有 src/ 目录，源码在仓库根 + repositories/ + utils/。
+      #    `--cov=src` 会「No data was collected」但**退出码仍是 0**，静默假绿。
+      #    source 由 .coveragerc 的 [run] source 决定。
+      - name: pytest with coverage
+        run: |
+          python -m pytest \
+            --cov \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-fail-under=${{ env.COVERAGE_MIN }}
+
+      - name: Upload coverage report
+        # always() —— 测试失败时更要把报告留下来定位问题
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-py${{ matrix.python-version }}
+          path: |
+            coverage.xml
+            coverage.json
+            htmlcov/
+          if-no-files-found: warn
+          retention-days: 14
+
+      # 可选：把覆盖率推到 Codecov（需先在仓库 Secrets 配置 CODECOV_TOKEN）
+      # 只从 3.12 上传一次，避免三个版本互相覆盖同一份报告。
+      # ⚠️ 条件里直接用 secrets 上下文：步骤自己的 if 读不到同一步骤 env 里刚声明的值。
+      - name: Upload to Codecov
+        if: ${{ always() && matrix.python-version == '3.12' && secrets.CODECOV_TOKEN != '' }}
+        continue-on-error: true
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}

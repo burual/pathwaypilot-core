@@ -1,0 +1,80 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+envs/
+
+# ---- 测试 / 覆盖率产物（CI 会生成，不入库）----
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+coverage.json
+coverage_gaps.md
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+
+# ---- 类型检查缓存 ----
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+*.pytype
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 项目特有 ----
+# 本工作区用于 git 事故救援的目录（含 bundle 与陈旧索引），加大体积二进制，不应入库
+.git_rescue/
+
+# ---- 2026-10-05 补：下列三项原先漏了，若不补会把巨额工装送上云端 ----
+# 说明：实测未补之前 `git add -A` 会纳入 1151 个文件，补上后只剩 ~70 个。
+#
+# 一次性浏览器/网络测量工装：55 MB、1000+ 文件、含 138 个临时 .db。
+# 刻意与 pyproject.toml 的 tool.ruff.extend-exclude / tool.mypy.exclude 保持一致
+# （那两处也排除了它，理由相同：不是产品代码，是探针脚本）。
+_probe/
+# 本工作区的 AI 协作记忆（含内部讨论细节与技术决策记录），只应留在本地。
+# ⚠️ 公开仓库尤其不能放：记忆里有未公开的方案推演与踩坑记录。
+.workbuddy/
+# 跨机迁移物料：含 6.3 MB 的整包 zip，其内容与仓库自身完全重复。
+migration_pack/
+
+# ---- 内部方案文档：仅留本地，不随仓库公开（2026-10-05 决定）----
+# 这 5 份是产品规划 / 技术评估 / 立项类材料，与代码本身无关，
+# 不希望被搜索引擎索引，故不入库。**文件仍完整保留在工作区**，
+# 只是不再被 git 跟踪。
+# ⚠️ 用「具体文件名 + 前导 /」而非 *.md 通配：仓库根还有 README.md，
+#    docs/ 下有 API.md，通配会误伤。
+/可视化现状评估.md
+/五大核心问题_优化方案.md
+/iframe解耦路线图.md
+/通路图叠加_导出_配色_搜索分页_方案.md
+/§1.2前置功能缺口_立项书.md
+# 本地临时探针脚本
+.tmp_*/
+# 私钥绝不可入库（同目录的 github_ssh_pubkey.txt 是公钥，可入库）
+*.pem
+id_rsa*
+id_ed25519*
+!id_ed25519.pub
+.env
+.env.*
+!.env.example

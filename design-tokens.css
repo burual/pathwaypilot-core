@@ -1,0 +1,130 @@
+/* ============================================================
+   PathwayPilot · Design Tokens v0.2 —— 学术紫
+   主色 #6E1F57（接近青莲紫但偏暗，规避品牌争议）
+   浅色（默认） + 深色「学术模式」[data-theme="academic-dark"]
+   仅原型、不接真实数据
+   ============================================================
+   分层：① 原始调色板（primary/neutral/semantic/evidence）
+         ② 语义绑定（bg/text/border/brand…）—— 组件只消费第②层，
+            深色模式因此只需换一层 [data-theme] 即可全站生效。
+   ============================================================ */
+
+:root {
+  /* ---------- ① Primary 学术紫 ---------- */
+  --pp-primary-50:  #F7F0F5;   /* 卡片/侧栏/输入框背景 */
+  --pp-primary-100: #EDE0E9;   /* 分割线/表格边框/轻描边 */
+  --pp-primary-400: #8A3A72;   /* 次级强调：进度、选中态 */
+  --pp-primary-500: #6E1F57;   /* ★主色：导航/主按钮/品牌/链接（标题不使用主色） */
+  --pp-primary-600: #581845;   /* 主按钮 hover/active、焦点边框 */
+
+  /* ---------- ① Neutral 中性 ---------- */
+  --pp-neutral-100: #F3F4F6;   /* 页面背景（浅色） */
+  --pp-neutral-300: #D1D5DB;   /* 边框/分隔线 */
+  --pp-neutral-400: #9CA3AF;   /* 证据低·灰色点状 */
+  --pp-neutral-500: #6B7280;   /* 禁用文字/占位符 */
+  --pp-neutral-700: #3D4452;   /* 次要文字/帮助文本 */
+  --pp-neutral-900: #1A1D23;   /* 正文主文字 */
+  --pp-white:       #FFFFFF;   /* 卡片/弹窗背景 */
+
+  /* ---------- ① Semantic 语义 ---------- */
+  --pp-up:      #C05621;       /* 数据上调（丰度增加）低饱和橙红 */
+  --pp-down:    #2C7A7B;       /* 数据下调（丰度减少）低饱和蓝绿 */
+  --pp-warning: #D69E2E;       /* 警告/注意 暖黄 */
+  --pp-error:   #C53030;       /* 错误/危险 暗红（仅严重错误） */
+  --pp-success: #276749;       /* 成功/完成 深绿 */
+
+  /* ---------- ① Evidence 证据强度 ---------- */
+  --pp-evidence-high: #6E1F57;               /* = primary-500 实心 */
+  --pp-evidence-mid:  rgba(110,31,87,.5);    /* = primary-500 50% */
+  --pp-evidence-low:  #9CA3AF;               /* = neutral-400 灰色点状 */
+
+  /* ========== ② 语义绑定层（组件只认这一层） ========== */
+  --pp-bg-page:        var(--pp-neutral-100);
+  --pp-bg-card:        var(--pp-white);
+  --pp-bg-subtle:      var(--pp-primary-50);
+  --pp-text-primary:   var(--pp-neutral-900);
+  --pp-text-heading:   var(--pp-neutral-900);  /* ★标题统一中性色，不用主色 */
+  --pp-text-secondary: var(--pp-neutral-700);
+  --pp-text-muted:     var(--pp-neutral-500);
+  --pp-text-on-brand:  var(--pp-white);
+  --pp-link:           var(--pp-primary-500);  /* 链接 */
+  --pp-link-hover:     var(--pp-primary-600);
+  --pp-border:         var(--pp-neutral-300);
+  --pp-border-subtle:  var(--pp-primary-100);
+  --pp-brand:          var(--pp-primary-500);
+  --pp-brand-hover:    var(--pp-primary-600);
+  --pp-brand-accent:   var(--pp-primary-400);
+  --pp-focus-ring:     var(--pp-primary-400);
+
+  /* ---------- Typography · 字体族 ---------- */
+  --pp-font-heading: 'Inter','Source Sans 3','Source Sans Pro',system-ui,sans-serif;
+  --pp-font-body:    'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --pp-font-mono:    'JetBrains Mono','Roboto Mono',ui-monospace,Consolas,monospace;
+
+  /* ---------- Typography · 字号 / 行高 ---------- */
+  --pp-text-hero:36px;  --pp-lh-hero:44px;   /* 2.25rem   */
+  --pp-text-h1:28px;    --pp-lh-h1:36px;     /* 1.75rem   */
+  --pp-text-h2:20px;    --pp-lh-h2:28px;     /* 1.25rem   */
+  --pp-text-h3:16px;    --pp-lh-h3:24px;     /* 1rem bold */
+  --pp-text-body:15px;  --pp-lh-body:24px;   /* .9375rem  */
+  --pp-text-small:13px; --pp-lh-small:20px;  /* .8125rem  */
+  --pp-text-mono:14px;  --pp-lh-mono:22px;   /* .875rem   */
+
+  --pp-weight-regular:400;
+  --pp-weight-medium: 500;
+  --pp-weight-bold:   700;
+
+  /* ---------- Spacing · 4px 基准 ---------- */
+  --pp-space-1:4px;   --pp-space-2:8px;   --pp-space-3:12px;  --pp-space-4:16px;
+  --pp-space-5:20px;  --pp-space-6:24px;  --pp-space-8:32px;  --pp-space-10:40px;
+  --pp-space-12:48px; --pp-space-16:64px;
+
+  /* ---------- Radius ---------- */
+  --pp-radius-tag:4px;    /* 标签/徽章 */
+  --pp-radius-btn:6px;    /* 按钮 */
+  --pp-radius-input:6px;  /* 输入框 */
+  --pp-radius-card:8px;   /* 卡片 */
+  --pp-radius-modal:12px; /* 模态框 */
+
+  /* ---------- Shadow（仅两级） ---------- */
+  --pp-shadow-card:  0 1px 2px rgba(0,0,0,.05);
+  --pp-shadow-modal: 0 4px 6px rgba(0,0,0,.1);
+
+  /* ---------- Layout ---------- */
+  --pp-navbar-h:64px;
+}
+
+/* ============================================================
+   深色「学术模式」——低对比度舒适阅读，避免霓虹
+   只换颜色，字号/间距/圆角/阴影结构不变
+   ============================================================ */
+[data-theme="academic-dark"] {
+  --pp-bg-page:        #111827;
+  --pp-bg-card:        #1F2937;
+  --pp-bg-subtle:      #1F2937;
+  --pp-text-primary:   #E5E7EB;
+  --pp-text-secondary: #C3C9D4;
+  --pp-text-muted:     #8B93A1;
+  --pp-text-on-brand:  #F5F3F5;
+  --pp-border:         #374151;
+  --pp-border-subtle:  #2A3441;
+
+  --pp-brand:          #9B6A9E;   /* 浅紫替代主色 */
+  --pp-brand-hover:    #B082B3;
+  --pp-brand-accent:   #9B6A9E;
+  --pp-focus-ring:     #9B6A9E;
+  --pp-link:           #9B6A9E;
+  --pp-link-hover:     #B082B3;
+
+  --pp-evidence-high:  #9B6A9E;
+  --pp-evidence-mid:   rgba(155,106,158,.5);
+  --pp-evidence-low:   #4B5563;
+
+  --pp-shadow-card:  0 1px 2px rgba(0,0,0,.4);
+  --pp-shadow-modal: 0 4px 6px rgba(0,0,0,.5);
+}
+
+/* ============================================================
+   Review checklist —— 禁止项
+   禁渐变 / 霓虹 glow / 赛博网格 / 机器人插画 / 纯红纯绿 / 3 级+ 阴影
+   ============================================================ */

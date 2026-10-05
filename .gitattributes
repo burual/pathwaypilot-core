@@ -1,0 +1,76 @@
+# .gitattributes — 统一行尾与二进制判定（2026-10-05 新增）
+#
+# 为什么必须有这个文件：
+#   本仓源码**全部是 LF**。而 Windows 版 Git 安装时默认把
+#   `core.autocrlf` 设为 `true`，会在**检出时**把 LF 改写成 CRLF。
+#   后果是「同一份代码在两台机器上字节不同」：
+#     · ruff format 报出差异（本仓 line-ending = "auto"，对行尾敏感）
+#     · pre-commit 的 mixed-line-ending / trailing-whitespace 误报
+#     · 每次 diff 都混入大量纯行尾噪音，淹没真实改动
+#
+#   实测证据：首次 `git add -A` 时，全部 66 个文本文件都报了
+#     `warning: in the working copy of 'X', LF will be replaced by CRLF`
+#   即为此问题。
+#
+# 策略：**入库与检出都固定 LF**，让 Windows / Linux / macOS 三端字节一致。
+#   参考：上一代仓库（见 .git_rescue/config）也是 `autocrlf = false`，同一思路。
+#   跨平台一致性由本文件保证，不依赖每个人本机的 core.autocrlf 设置。
+
+* text=auto eol=lf
+
+# ---- 文本文件：显式 LF ----
+*.py       text eol=lf
+*.pyi      text eol=lf
+*.md       text eol=lf
+*.txt      text eol=lf
+*.toml     text eol=lf
+*.cfg      text eol=lf
+*.ini      text eol=lf
+*.yaml     text eol=lf
+*.yml      text eol=lf
+*.json     text eol=lf
+*.html     text eol=lf
+*.htm      text eol=lf
+*.css      text eol=lf
+*.js       text eol=lf
+*.ts       text eol=lf
+*.vue      text eol=lf
+*.sh       text eol=lf
+*.sql      text eol=lf
+*.svg      text eol=lf
+Dockerfile text eol=lf
+
+# ---- 二进制文件：禁止行尾转换与文本 diff ----
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.webp     binary
+*.bmp      binary
+*.pdf      binary
+*.zip      binary
+*.gz       binary
+*.tar      binary
+*.7z       binary
+*.bundle   binary
+*.db       binary
+*.sqlite   binary
+*.sqlite3  binary
+*.pyc      binary
+*.so       binary
+*.dll      binary
+*.exe      binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+*.otf      binary
+*.eot      binary
+*.xlsx     binary
+*.xls      binary
+*.docx     binary
+*.pptx     binary
+*.rds      binary
+*.RData    binary
+*.h5       binary
+*.parquet  binary

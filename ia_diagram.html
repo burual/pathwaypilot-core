@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PathwayPilot · 信息架构图</title>
+<style>
+  :root{
+    --ink:#1B2A41;          /* 墨蓝主标题 */
+    --medical:#1E4E79;      /* 医疗蓝主色 */
+    --medical-soft:#E6F1FB; /* 医疗蓝浅填充 */
+    --slate:#5B6B7F;        /* 中性灰辅助文字 */
+    --line:#C7D2DE;         /* 边框线 */
+    --paper:#F7F8FA;        /* 页面底 */
+    --card:#FFFFFF;         /* 卡片底 */
+    --evidence-low:#B45309; /* 证据低=琥珀 */
+    --evidence-mid:#1E4E79; /* 证据中=蓝 */
+    --evidence-high:#2E7D32;/* 证据高=绿 */
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--paper);
+    font-family:'Inter','Source Sans Pro','Segoe UI',system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 48px;}
+  .doc-head{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:8px;}
+  .doc-head h1{font-size:21px;font-weight:600;margin:0 0 4px;color:var(--ink);letter-spacing:.2px;}
+  .doc-head p{font-size:13px;color:var(--slate);margin:0;}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin:16px 0 4px;font-size:12px;color:var(--slate);}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block;}
+  svg{width:100%;height:auto;display:block;}
+  text{font-family:'Inter','Source Sans Pro',system-ui,sans-serif;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="doc-head">
+    <h1>PathwayPilot · 信息架构图（Information Architecture）</h1>
+    <p>面向临床医生 / 医学教师 / 非生信科研人员的通路分析平台 · 模块 1 / 4 · 仅结构示意，非最终视觉</p>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="background:#1E4E79"></i>主色（医疗蓝）</span>
+    <span><i class="sw" style="background:#5B6B7F"></i>中性灰（辅助）</span>
+    <span><i class="sw" style="background:#B45309"></i>证据·低</span>
+    <span><i class="sw" style="background:#1E4E79"></i>证据·中</span>
+    <span><i class="sw" style="background:#2E7D32"></i>证据·高</span>
+    <span style="color:#888">虚线＝专家模式专属展开项</span>
+  </div>
+
+  <svg viewBox="0 0 1080 920" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="平台信息架构图">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#9AA7B6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- ===== Root ===== -->
+    <rect x="420" y="40" width="240" height="50" rx="10" fill="#1E4E79"/>
+    <text x="540" y="71" text-anchor="middle" font-size="16" font-weight="600" fill="#FFFFFF">PathwayPilot 通路分析平台</text>
+
+    <!-- root -> pillars -->
+    <line x1="540" y1="90" x2="190" y2="158" stroke="#9AA7B6" stroke-width="1.2" marker-end="url(#arr)"/>
+    <line x1="540" y1="90" x2="540" y2="158" stroke="#9AA7B6" stroke-width="1.2" marker-end="url(#arr)"/>
+    <line x1="540" y1="90" x2="890" y2="158" stroke="#9AA7B6" stroke-width="1.2" marker-end="url(#arr)"/>
+
+    <!-- ===== Pillars ===== -->
+    <rect x="40"  y="158" width="300" height="54" rx="10" fill="#FFFFFF" stroke="#C7D2DE" stroke-width="1"/>
+    <text x="190" y="180" text-anchor="middle" font-size="15" font-weight="600" fill="#1B2A41">分析流程（核心）</text>
+    <text x="190" y="200" text-anchor="middle" font-size="11.5" fill="#5B6B7F">向导式 · 角色自适应</text>
+
+    <rect x="390" y="158" width="300" height="54" rx="10" fill="#FFFFFF" stroke="#C7D2DE" stroke-width="1"/>
+    <text x="540" y="180" text-anchor="middle" font-size="15" font-weight="600" fill="#1B2A41">资源与学习</text>
+    <text x="540" y="200" text-anchor="middle" font-size="11.5" fill="#5B6B7F">知识库 · 术语 · 方法</text>
+
+    <rect x="740" y="158" width="300" height="54" rx="10" fill="#FFFFFF" stroke="#C7D2DE" stroke-width="1"/>
+    <text x="890" y="180" text-anchor="middle" font-size="15" font-weight="600" fill="#1B2A41">账户与设置</text>
+    <text x="890" y="200" text-anchor="middle" font-size="11.5" fill="#5B6B7F">角色 · 主题 · 合规</text>
+
+    <!-- ===== P1 spine + steps ===== -->
+    <line x1="190" y1="212" x2="190" y2="540" stroke="#C7D2DE" stroke-width="1.2"/>
+
+    <rect x="40" y="248" width="300" height="56" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <circle cx="66" cy="276" r="13" fill="#E6F1FB"/>
+    <text x="66" y="281" text-anchor="middle" font-size="13" font-weight="600" fill="#1E4E79">1</text>
+    <text x="92" y="270" font-size="14" font-weight="600" fill="#1B2A41">上传样本</text>
+    <text x="92" y="289" font-size="11" fill="#5B6B7F">肽 / 蛋白 / 基因列表 · 样本信息</text>
+
+    <rect x="40" y="316" width="300" height="56" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <circle cx="66" cy="344" r="13" fill="#E6F1FB"/>
+    <text x="66" y="349" text-anchor="middle" font-size="13" font-weight="600" fill="#1E4E79">2</text>
+    <text x="92" y="338" font-size="14" font-weight="600" fill="#1B2A41">设定分析目标</text>
+    <text x="92" y="357" font-size="11" fill="#5B6B7F">样本间 / 物种间 · 表型或疾病背景</text>
+
+    <rect x="40" y="384" width="300" height="56" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <circle cx="66" cy="412" r="13" fill="#E6F1FB"/>
+    <text x="66" y="417" text-anchor="middle" font-size="13" font-weight="600" fill="#1E4E79">3</text>
+    <text x="92" y="406" font-size="14" font-weight="600" fill="#1B2A41">配置参数</text>
+    <text x="92" y="425" font-size="11" fill="#5B6B7F">专家模式展开：算法 / 阈值 / 统计</text>
+
+    <rect x="40" y="452" width="300" height="56" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <circle cx="66" cy="480" r="13" fill="#E6F1FB"/>
+    <text x="66" y="485" text-anchor="middle" font-size="13" font-weight="600" fill="#1E4E79">4</text>
+    <text x="92" y="474" font-size="14" font-weight="600" fill="#1B2A41">运行分析</text>
+    <text x="92" y="493" font-size="11" fill="#5B6B7F">状态透明 · 学术化表述</text>
+
+    <rect x="40" y="520" width="300" height="56" rx="9" fill="#EAF1F8" stroke="#1E4E79" stroke-width="1.2"/>
+    <circle cx="66" cy="548" r="13" fill="#1E4E79"/>
+    <text x="66" y="553" text-anchor="middle" font-size="13" font-weight="600" fill="#FFFFFF">5</text>
+    <text x="92" y="542" font-size="14" font-weight="600" fill="#1B2A41">结果解读（临床叙事）</text>
+    <text x="92" y="561" font-size="11" fill="#5B6B7F">核心交付物 · 假设语言</text>
+
+    <!-- ===== P2 children ===== -->
+    <line x1="540" y1="212" x2="540" y2="424" stroke="#C7D2DE" stroke-width="1.2"/>
+    <rect x="390" y="248" width="300" height="50" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <text x="408" y="278" font-size="13.5" font-weight="500" fill="#1B2A41">通路知识库（KEGG · 自建）</text>
+    <rect x="390" y="316" width="300" height="50" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <text x="408" y="346" font-size="13.5" font-weight="500" fill="#1B2A41">术语表（首次出现通俗解释）</text>
+    <rect x="390" y="384" width="300" height="50" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <text x="408" y="414" font-size="13.5" font-weight="500" fill="#1B2A41">分析方法与参数说明</text>
+
+    <!-- ===== P3 children ===== -->
+    <line x1="890" y1="212" x2="890" y2="424" stroke="#C7D2DE" stroke-width="1.2"/>
+    <rect x="740" y="248" width="300" height="50" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <text x="758" y="278" font-size="13.5" font-weight="500" fill="#1B2A41">角色切换：医生 / 专家</text>
+    <rect x="740" y="316" width="300" height="50" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <text x="758" y="346" font-size="13.5" font-weight="500" fill="#1B2A41">主题：浅色 / 学术深色</text>
+    <rect x="740" y="384" width="300" height="50" rx="9" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="1"/>
+    <text x="758" y="414" font-size="13.5" font-weight="500" fill="#1B2A41">数据来源与合规信息</text>
+
+    <!-- ===== Results panel ===== -->
+    <line x1="340" y1="548" x2="430" y2="548" stroke="#9AA7B6" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="430" y="470" width="610" height="300" rx="10" fill="#FFFFFF" stroke="#C7D2DE" stroke-width="1"/>
+    <rect x="430" y="470" width="610" height="40" rx="10" fill="#1E4E79"/>
+    <rect x="430" y="495" width="610" height="15" fill="#1E4E79"/>
+    <text x="450" y="496" font-size="14" font-weight="600" fill="#FFFFFF">结果解读 · 内容结构（临床叙事）</text>
+
+    <!-- rows -->
+    <g>
+      <rect x="450" y="528" width="570" height="34" rx="7" fill="#F4F7FA"/>
+      <circle cx="468" cy="545" r="4" fill="#1E4E79"/>
+      <text x="482" y="550" font-size="12.5" fill="#1B2A41">样本概览 — 物种 / 组织 / 分组 / 匹配率</text>
+
+      <rect x="450" y="570" width="570" height="34" rx="7" fill="#F4F7FA"/>
+      <circle cx="468" cy="587" r="4" fill="#1E4E79"/>
+      <text x="482" y="592" font-size="12.5" fill="#1B2A41">主要代谢 / 功能变化 — 假设语言（“提示…”“可能…”）</text>
+
+      <rect x="450" y="612" width="570" height="34" rx="7" fill="#F4F7FA"/>
+      <circle cx="468" cy="629" r="4" fill="#1E4E79"/>
+      <text x="482" y="634" font-size="12.5" fill="#1B2A41">可能相关的疾病 / 生理机制</text>
+
+      <rect x="450" y="654" width="570" height="34" rx="7" fill="#F4F7FA"/>
+      <circle cx="468" cy="671" r="4" fill="#1E4E79"/>
+      <text x="482" y="676" font-size="12.5" fill="#1B2A41">证据强度 — 低 / 中 / 高（不编造显著性）</text>
+      <rect x="812" y="660" width="40" height="20" rx="5" fill="#B45309"/><text x="832" y="674" text-anchor="middle" font-size="10" fill="#fff">低</text>
+      <rect x="858" y="660" width="40" height="20" rx="5" fill="#1E4E79"/><text x="878" y="674" text-anchor="middle" font-size="10" fill="#fff">中</text>
+      <rect x="904" y="660" width="40" height="20" rx="5" fill="#2E7D32"/><text x="924" y="674" text-anchor="middle" font-size="10" fill="#fff">高</text>
+
+      <rect x="450" y="696" width="570" height="34" rx="7" fill="#F4F7FA"/>
+      <circle cx="468" cy="713" r="4" fill="#1E4E79"/>
+      <text x="482" y="718" font-size="12.5" fill="#1B2A41">进一步实验建议</text>
+
+      <rect x="450" y="738" width="570" height="24" rx="7" fill="#EAF1F8"/>
+      <text x="482" y="755" font-size="12" font-weight="500" fill="#1E4E79">导出教学报告（PDF / 可引用格式）</text>
+    </g>
+
+    <!-- ===== Trust & compliance band ===== -->
+    <rect x="40" y="600" width="1000" height="78" rx="10" fill="#EEF2F6" stroke="#C7D2DE" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="60" y="628" font-size="14" font-weight="600" fill="#1B2A41">信任与合规层（贯穿全域）</text>
+    <text x="60" y="652" font-size="12.5" fill="#5B6B7F">数据来源标注（KEGG · UniProt · 自建库） ｜ 分析时间 ｜ 参数版本 ｜ 证据强度说明（低 / 中 / 高，绝不编造显著性）</text>
+
+    <!-- ===== Role note ===== -->
+    <rect x="430" y="800" width="610" height="92" rx="10" fill="#FBFAF7" stroke="#C7D2DE" stroke-width="1"/>
+    <text x="450" y="824" font-size="13.5" font-weight="600" fill="#1B2A41">角色引导（贯穿全流程）</text>
+    <text x="450" y="848" font-size="12" fill="#5B6B7F">医生模式：隐藏原始参数，引导式「上传 → 选疾病/表型 → 看机制摘要 → 导出教学报告」</text>
+    <text x="450" y="870" font-size="12" fill="#5B6B7F">专家模式：再展开 原始参数 / EC·KO / 物种贡献 / 统计细节（与步骤③虚线联动）</text>
+  </svg>
+</div>
+</body>
+</html>

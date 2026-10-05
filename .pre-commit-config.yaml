@@ -1,0 +1,129 @@
+# .pre-commit-config.yaml
+#
+# 安装：python -m pip install pre-commit && pre-commit install
+# 全量手动跑：pre-commit run --all-files
+#
+# 与 CI 的分工（刻意不同，别改错）：
+#   - pre-commit = 提交前的**快反馈**：ruff / mypy / 循环依赖 / pytest 快子集（-m "not slow"）
+#   - CI         = 权威门禁：3 个 Python 版本 + 全量用例（含 slow）+ 覆盖率阈值
+#   所以这里跑 pytest 时**不带 --cov**（覆盖率是 CI 的事，本地跑纯属拖慢提交）。
+minimum_pre_commit_version: "3.5.0"
+# ⚠️ 这里刻意**不设** default_install_hook_types: [pre-commit, pre-push]。
+#    本文件的所有 hook 都用默认 stage（pre-commit），没有任何 hook 声明
+#    stages: [pre-push]，若装了 pre-push 钩子它只会是个「什么都不跑」的空壳，
+#    徒增困惑。
+#    若想让提交更快：给下面两个较重的 hook（check-circular-deps / pytest-fast）
+#    加 `stages: [pre-push]`，再把 pre-push 加到这里即可 ——
+#    效果是「提交时只跑 lint/类型，推送时才跑测试」。
+
+# ⚠️ 不要在这里设 default_language_version: python3 —— 各 hook 的 rev 已锁定
+#    自己的解释器环境；强行指定反而会和 CI 的 3.10/3.11/3.12 矩阵产生差异。
+fail_fast: false
+
+repos:
+  # ---------------------------------------------------------------------
+  # 1. 通用卫生检查（改动最小化：只拦真问题，不做大规模自动改写）
+  # ---------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-toml
+      - id: check-json
+        # coverage.json 是生成的，别校验
+        exclude: ^(coverage\.json|htmlcov/)/
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        # ⚠️ PathMind/ 下是 CRLF 且大量文件本就没有末尾换行；
+        #    不加这行 exclude，首次 --all-files 会重写几十个文件、diff 淹没真实改动。
+        exclude: ^(PathMind/|htmlcov/|coverage\.json$)
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        exclude: ^(PathMind/|htmlcov/|coverage\.json$)
+      - id: mixed-line-ending
+        # --fix=no：只报告混合行尾，不自动改。本仓 PathMind/ 是 CRLF、gateway/ 是 LF，
+        # 自动统一会把整个目录变成一次巨大 diff。需要统一时单独开一个 PR 做。
+        args: [--fix=no]
+
+  # ---------------------------------------------------------------------
+  # 2. ruff —— lint + format（rev 必须与 CI 安装的 ruff 同版本）
+  #    改版本时两处一起改：这里 + requirements-dev.txt
+  # ---------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.7
+    hooks:
+      # --fix 让 hook 顺手改掉可自动修的问题（未使用 import、import 排序等）
+      - id: ruff
+        name: ruff lint (with --fix)
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff format
+
+  # ---------------------------------------------------------------------
+  # 3. mypy —— 类型检查
+  #    mirrors-mypy 的 hook 环境是**空的**，所以第三方库必须通过
+  #    additional_dependencies 装进去，否则 pydantic/sqlalchemy 全部
+  #    import-untyped 报错（这是最常见的「CI 过了本地不过」原因）。
+  # ---------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.1
+    hooks:
+      - id: mypy
+        name: mypy type check
+        args: [--config-file=pyproject.toml, --pretty]
+        additional_dependencies:
+          - "pydantic>=2.7"
+          - "sqlalchemy>=2.0"
+          - "types-requests"
+        files: ^(.*\.py)$
+        exclude: ^(tests/|htmlcov/)
+
+  # ---------------------------------------------------------------------
+  # 4. 循环依赖检测 —— 复用仓库自己的检测器
+  #    language: system 表示用当前环境跑；也可改 language: python + additional_dependencies
+  #    pass_filenames: false —— 它扫整个项目，不需要 pre-commit 传文件列表
+  # ---------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: check-circular-deps
+        name: check circular imports
+        entry: python check_circular_deps.py .
+        language: system
+        pass_filenames: false
+        always_run: true
+        # 只报运行期环；函数内 / TYPE_CHECKING 的延迟导入是推荐的断环手段，不算环
+
+      # -----------------------------------------------------------------
+      # 5. pytest 快子集（"仅快照"）
+      #    -m "not slow and not integration" 只跑未打标的两类以外的用例；不带 --cov。
+      #    ⚠️ 这里连 integration 一起排除：集成用例虽然用内存 SQLite 很快，
+      #       但它们要起 FastAPI 应用 + 真实事务，语义上属于「权威门禁」的范畴，
+      #       交给 CI 跑全量。想在本地单独跑：pytest -m integration
+      #    ⚠️ 若某天所有用例都被标记 slow/integration，pytest 会以退出码 5
+      #       「未收集到用例」结束 —— 那**不是**失败，但 pre-commit 会拦。
+      #       届时改用 `-m "not slow or slow"` 或直接去掉 -m。
+      #    ⚠️ name 里别写冒号：YAML 的普通标量一旦出现 ": " 就会解析失败
+      #       （validate-config 报 mapping values are not allowed in this context）。
+      # -----------------------------------------------------------------
+      - id: pytest-fast
+        name: pytest fast subset (unit only, no coverage)
+        entry: python -m pytest -m "not slow and not integration" -q --no-cov
+        language: system
+        pass_filenames: false
+        always_run: true
+        # 依赖测试文件变化时才值得跑；用 files 限定可减少无谓执行
+        files: ^(tests/|.*\.py)$
+
+# ---------------------------------------------------------------------------
+# pre-commit.ci（可选）：在云端跑 pre-commit 并自动修复 PR
+# 开启方式：在 https://pre-commit.ci 绑定仓库即可，无需 token 文件。
+# ---------------------------------------------------------------------------
+ci:
+  autofix_prs: true
+  autoupdate_schedule: monthly
+  # 云端的 pre-commit.ci 没有本项目的测试依赖，pytest hook 一定会失败 → 跳过
+  skip: [pytest-fast, check-circular-deps]

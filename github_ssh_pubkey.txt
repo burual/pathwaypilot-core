@@ -1,0 +1,1 @@
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGChVT8/CHB7W9TMXkm/BepdfXzJVeCIwIT90mmYnRqK pathwaypilot-dev@local

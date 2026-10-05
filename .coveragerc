@@ -1,0 +1,100 @@
+# .coveragerc — coverage.py 配置
+#
+# 本项目实测后的目录布局（⚠️ 没有 src/ 目录）：
+#   <repo root>/base_service.py, search_service.py, service_protocols.py,
+#               example_gene_service.py, check_circular_deps.py
+#   <repo root>/repositories/*.py
+#   <repo root>/utils/*.py
+#   <repo root>/tests/*.py        <- 排除
+#
+# 因此用 `--cov`（不带值）走 [run] source 配置，而不是 `--cov=src`。
+
+[run]
+# 只统计这 3 个位置；tests/ 不在其中，天然不会被计入分母。
+source =
+    .
+    repositories
+    utils
+
+omit =
+    # 测试自身
+    */tests/*
+    tests/*
+    # 虚拟环境 / 依赖
+    */site-packages/*
+    */dist-packages/*
+    */.venv/*
+    */venv/*
+    */envs/*
+    */.workbuddy/*
+    # Python 缓存与构建产物
+    */__pycache__/*
+    */build/*
+    */dist/*
+    # 开发工具脚本，不属于被测源码（需要统计时删掉下面两行）
+    check_circular_deps.py
+    coverage_gaps.py
+    # 项目级配置
+    setup.py
+    conftest.py
+
+# 把并行/子进程的数据也合并进来（本仓目前单进程，留作扩展）
+parallel = false
+branch = true
+
+[report]
+# 统计精度：保留 1 位小数
+precision = 1
+
+# 低于该覆盖率时退出码非 0（可用于 CI 门禁；0 表示永不因覆盖率失败）
+fail_under = 0
+
+# 报告尾部显示被跳过的文件
+show_missing = true
+skip_covered = false
+
+exclude_lines =
+    pragma: no cover
+    # 类型检查专属分支（运行时永不执行，不应算作未覆盖）
+    if TYPE_CHECKING:
+    # 抽象方法 / Protocol 桩：只有 `...` 或 pass 的实现体
+    @(abc\.)?abstractmethod
+    ^\s*(async\s+)?def .*->[^:]*:\s*\.\.\.\s*$
+    ^\s*\.\.\.\s*$
+    raise NotImplementedError
+    # 防御性分支：`if 0:` / 永不满足的守卫
+    ^\s*if 0:
+    # 库兼容分支
+    except ImportError
+    # 脚本入口
+    if __name__ == .__main__.:
+    ^\s*return NotImplemented$
+
+# 多行 `if TYPE_CHECKING:` 块内整段排除（coverage 7.x 支持）
+# 若用 coverage<7，可删掉下面的 partial_branches 保留 exclude_lines 即可
+partial_branches =
+    pragma: no branch
+    if TYPE_CHECKING:
+
+[html]
+directory = htmlcov
+title = PathwayPilot 后端覆盖率报告
+
+[xml]
+output = coverage.xml
+
+[json]
+output = coverage.json
+pretty_print = true
+
+# 同一份源码在不同容器/宿主机路径下被统计时，把路径归一化到同一个 key，
+# 便于合并多环境数据（CI 与本机）。
+# ⚠️ 规则：[paths] 的模式 **不能以通配符结尾**（coverage 会抛
+#    ConfigError: Pattern must not end with wildcards）。
+#    所以写 `/home/runner/work/*/repo` 而不是 `/home/runner/work/*/*`。
+[paths]
+source =
+    .
+    /workspace
+    /app
+    /home/runner/work/*/repo

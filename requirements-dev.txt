@@ -1,0 +1,49 @@
+# requirements-dev.txt — CI / 本地开发依赖
+#
+# CI 与 .pre-commit-config.yaml 都读这个文件。
+# 分层：运行时依赖 + 测试依赖 + 静态检查依赖。
+
+# ---- 运行时 ----
+pydantic>=2.7,<3
+sqlalchemy>=2.0,<3
+
+# ---- 运行时：viz/ 绘图包（2026-10-05 补）----
+# ⚠️ 这 5 个库此前**漏列**，但 viz/ 的 8 个绘图模块直接 import 它们；
+#    而 tests/test_viz_volcano.py 是**模块级** import numpy / matplotlib，
+#    缺库时整个测试文件在**收集阶段就失败**（不是 skip）→ CI 必红。
+#    改前实测：只装本文件（10 项）跑 pytest，test_viz_volcano.py 直接 ImportError。
+numpy>=2.0
+matplotlib>=3.8
+plotly>=5.20          # viz/volcano.py 交互通道（缺则相关用例 importorskip 跳过）
+scipy>=1.11           # viz/heatmap.py 的层次聚类（缺则降级）
+scikit-learn>=1.4     # viz/pca_plot.py（缺则降级）
+# utils/time.py:13 用 zoneinfo.ZoneInfo；Windows 不自带 IANA 时区库，
+# 缺它会 ZoneInfo("Asia/Shanghai") 抛 ZoneInfoNotFoundError。CI（ubuntu）自带，故加平台标记。
+tzdata; platform_system == "Windows"
+
+# ---- 运行时：可选增强（装了功能更全，不装也能跑）----
+# mplcursors：viz/volcano.py 的悬停注解。
+# ⚠️ 它有 1 个用例直接 `import mplcursors` 而**没有** importorskip
+#    （见 tests/test_viz_volcano.py::test_hover_annotation_content，与该文件
+#    docstring 第 13 行「一律先 importorskip」的约定不一致）→ 缺库时该用例失败。
+#    故此处按「需要」列出而非「可选」，装上新机器验收才能全绿。
+mplcursors>=0.5
+# jieba：utils/text.py 的中文分词升级路径，缺失时自动回退正则分词，不抛错。
+jieba>=0.42
+
+# ---- 测试 ----
+pytest>=8.0
+pytest-cov>=5.0
+pytest-asyncio>=0.23          # base_service 的 async 装饰器路径需要
+fastapi>=0.110                # tests/conftest.py 的 test_client
+httpx>=0.27                   # fastapi.testclient 依赖 httpx
+
+# ---- 静态检查 ----
+# ⚠️ ruff 必须**精确锁版**，且与 .pre-commit-config.yaml 里的
+#    astral-sh/ruff-pre-commit rev 保持一致（当前 v0.16.7）。
+#    两边版本不同会导致「pre-commit 说没问题、CI 报错」这类最难查的差异。
+ruff==0.16.7
+mypy>=2.3,<3
+
+# ---- 本地钩子 ----
+pre-commit>=3.5
